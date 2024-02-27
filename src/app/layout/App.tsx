@@ -1,7 +1,16 @@
+import { Container } from 'semantic-ui-react';
+import EventDashboard from '../features/events/dashboard/EventDashboard';
+import NavBar from './nav/NavBar';
+import { useState } from 'react';
+
 function App() {
+  const [formOpen, setFormOpen] = useState<boolean>(false);
   return (
     <>
-      <h1>Hello World</h1>
+      <NavBar setFormOpen={setFormOpen} />
+      <Container className='main'>
+        <EventDashboard formOpen={formOpen} setFormOpen={setFormOpen} />
+      </Container>
     </>
   );
 }
