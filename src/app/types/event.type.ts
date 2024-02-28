@@ -10,6 +10,7 @@ export type AppEvent = {
   date: string;
   category: string;
   description: string;
+  city: string;
   venue: string;
   hostedBy: string;
   hostPhotoURL: string;
