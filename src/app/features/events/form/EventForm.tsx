@@ -2,21 +2,10 @@ import { ChangeEvent, useState } from 'react';
 import { Button, Form, Header, Segment } from 'semantic-ui-react';
 import { AppEvent } from '../../../types/event.type';
 import { createId } from '@paralleldrive/cuid2';
+import { Link } from 'react-router-dom';
 
-type Props = {
-  setFormOpen: (value: boolean) => void;
-  addEvent: (value: AppEvent) => void;
-  selectedEvent: AppEvent | null;
-  updateEvent: (value: AppEvent) => void;
-};
-
-function EventForm({
-  setFormOpen,
-  addEvent,
-  selectedEvent,
-  updateEvent,
-}: Props) {
-  const initalValues: AppEvent = selectedEvent ?? {
+function EventForm() {
+  const initalValues: AppEvent = {
     title: '',
     category: '',
     description: '',
@@ -31,19 +20,13 @@ function EventForm({
   const [values, setValues] = useState(initalValues);
 
   function onSubmit() {
-    if (selectedEvent) {
-      updateEvent({ ...selectedEvent, ...values });
-    } else {
-      addEvent({
-        ...values,
-        id: createId(),
-        hostedBy: 'Bob',
-        attendees: [],
-        hostPhotoURL: '',
-      });
-    }
-
-    setFormOpen(false);
+    setValues({
+      ...values,
+      id: createId(),
+      hostedBy: 'Bob',
+      attendees: [],
+      hostPhotoURL: '',
+    });
   }
 
   function handleInputChange(e: ChangeEvent<HTMLInputElement>) {
@@ -53,7 +36,7 @@ function EventForm({
 
   return (
     <Segment clearing>
-      <Header content={selectedEvent ? 'Update Event' : 'Create Event'} />
+      <Header content={'Create Event'} />
       <Form onSubmit={onSubmit}>
         <Form.Field>
           <input
@@ -111,10 +94,11 @@ function EventForm({
         </Form.Field>
         <Button type='submit' floated='right' positive content='Submit' />
         <Button
+          as={Link}
+          to='/events'
           type='submit'
           floated='right'
           content='Cancel'
-          onClick={() => setFormOpen(false)}
         />
       </Form>
     </Segment>

@@ -9,14 +9,13 @@ import {
 } from 'semantic-ui-react';
 import EventListAttendee from './EventListAttendee';
 import { AppEvent } from '../../../types/event.type';
+import { Link } from 'react-router-dom';
 
 type Props = {
   event: AppEvent;
-  selectEvent: (value: AppEvent) => void;
-  deleteEvent: (value: string) => void;
 };
 
-function EventListItem({ event, selectEvent, deleteEvent }: Props) {
+function EventListItem({ event }: Props) {
   return (
     <SegmentGroup>
       <Segment>
@@ -49,17 +48,13 @@ function EventListItem({ event, selectEvent, deleteEvent }: Props) {
       </Segment>
       <Segment clearing>
         <span>{event.description}</span>
+        <Button color='red' floated='right' content='Delete' />
         <Button
-          color='red'
-          floated='right'
-          content='Delete'
-          onClick={() => deleteEvent(event.id)}
-        />
-        <Button
+          as={Link}
+          to={`/events/${event.id}`}
           color='teal'
           floated='right'
           content='View'
-          onClick={() => selectEvent(event)}
         />
       </Segment>
     </SegmentGroup>
