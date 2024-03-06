@@ -3,6 +3,7 @@ import {
   Icon,
   Item,
   ItemGroup,
+  Label,
   List,
   Segment,
   SegmentGroup,
@@ -10,15 +11,12 @@ import {
 import EventListAttendee from './EventListAttendee';
 import { AppEvent } from '../../../types/event.type';
 import { Link } from 'react-router-dom';
-import { useAppDispatch } from '../../../store/store';
-import { deleteEvent } from '../eventSlice';
 
 type Props = {
   event: AppEvent;
 };
 
 function EventListItem({ event }: Props) {
-  const dispatch = useAppDispatch();
   return (
     <SegmentGroup>
       <Segment>
@@ -32,6 +30,14 @@ function EventListItem({ event }: Props) {
             <Item.Content>
               <Item.Header>{event.title}</Item.Header>
               <Item.Description>Hosted by {event.hostedBy}</Item.Description>
+              {event.isCancelled && (
+                <Label
+                  style={{ top: '-40px' }}
+                  ribbon='right'
+                  color='red'
+                  content='Cancelled'
+                />
+              )}
             </Item.Content>
           </Item>
         </ItemGroup>
@@ -51,12 +57,7 @@ function EventListItem({ event }: Props) {
       </Segment>
       <Segment clearing>
         <span>{event.description}</span>
-        <Button
-          color='red'
-          floated='right'
-          content='Delete'
-          onClick={() => dispatch(deleteEvent(event.id))}
-        />
+        <Button color='red' floated='right' content='Delete' />
         <Button
           as={Link}
           to={`/events/${event.id}`}

@@ -1,19 +1,24 @@
 import { Button, Form, Header, Segment } from 'semantic-ui-react';
-import { createId } from '@paralleldrive/cuid2';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { useAppDispatch, useAppSelector } from '../../../store/store';
-import { createEvent, updateEvent } from '../eventSlice';
+import { useAppSelector } from '../../../store/store';
 import { Controller, FieldValues, useForm } from 'react-hook-form';
 import { categoryOptions } from './categoryOptions';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
+import { AppEvent } from '../../../types/event.type';
+import { Timestamp } from 'firebase/firestore';
+import { toast } from 'react-toastify';
+import { useFirestore } from '../../../hooks/firestore/useFirestore';
+import { useEffect } from 'react';
+import { actions } from '../eventSlice';
+import LoadingComponent from '../../../layout/LoadingComponent';
 
 function EventForm() {
-  let { id } = useParams();
+  const { id } = useParams();
   const event = useAppSelector((state) =>
-    state.events.events.find((ev) => ev.id === id)
+    state.events.data?.find((ev) => ev.id === id)
   );
-  const dispatch = useAppDispatch();
+  const { status } = useAppSelector((state) => state.events);
   const navigate = useNavigate();
   const {
     register,
@@ -21,26 +26,60 @@ function EventForm() {
     control,
     setValue,
     formState: { errors, isValid, isSubmitting },
-  } = useForm({ mode: 'onTouched' });
+  } = useForm({
+    mode: 'onTouched',
+    async defaultValues() {
+      if (event) return { ...event, date: new Date(event.date) };
+    },
+  });
+  const { loadDocument, create, update } = useFirestore('events');
 
-  function onSubmit(data: FieldValues) {
-    id = id ?? createId();
-    if (event) {
-      dispatch(updateEvent({ ...event, ...data, date: data.date.toString() }));
-    } else {
-      dispatch(
-        createEvent({
-          ...data,
-          id,
-          hostedBy: 'Bob',
-          attendees: [],
-          hostPhotoURL: '',
-          date: data.date.toString(),
-        })
-      );
-    }
-    navigate(`/events/${id}`);
+  useEffect(() => {
+    if (!id) return;
+    loadDocument(id, actions);
+  }, [id, loadDocument]);
+
+  async function updateEvent(data: AppEvent) {
+    if (!event) return;
+    await update(data.id, {
+      ...data,
+      date: Timestamp.fromDate(data.date as unknown as Date),
+    });
   }
+
+  async function createEvent(data: FieldValues) {
+    const newEventRef = await create({
+      ...data,
+      hostedBy: 'Bob',
+      attendees: [],
+      hostPhotoURL: '',
+      date: Timestamp.fromDate(data.date as unknown as Date),
+    });
+    return newEventRef;
+  }
+
+  async function handleCancelToggle(event: AppEvent) {
+    await update(event.id, { isCancelled: !event.isCancelled });
+    toast.success(
+      `Event has been ${event.isCancelled ? 'Scheduled' : 'Cancelled'}`
+    );
+  }
+
+  async function onSubmit(data: FieldValues) {
+    try {
+      if (event) {
+        await updateEvent({ ...event, ...data });
+        navigate(`/events/${event.id}`);
+      } else {
+        const ref = await createEvent(data);
+        navigate(`/events/${ref?.id}`);
+      }
+    } catch (error: any) {
+      toast.error(error.message);
+    }
+  }
+
+  if (status === 'loading') return <LoadingComponent />;
 
   return (
     <Segment clearing>
@@ -118,14 +157,15 @@ function EventForm() {
           />
         </Form.Field>
 
-        {/* <Form.Input
-          type='date'
-          defaultValue={event?.date || ''}
-          placeholder='Date'
-          as={DatePicker}
-          {...register('date', { required: 'Date is required' })}
-          error={errors.date && errors.date.message}
-        /> */}
+        {event && (
+          <Button
+            type='button'
+            floated='left'
+            color={event.isCancelled ? 'green' : 'red'}
+            onClick={() => handleCancelToggle(event)}
+            content={event.isCancelled ? 'Schedule' : 'Cancel'}
+          />
+        )}
 
         <Button
           type='submit'

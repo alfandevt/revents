@@ -1,34 +1,47 @@
-import { createSlice } from '@reduxjs/toolkit';
-import { sampleData } from '../../api/sampeData';
+import { PayloadAction } from '@reduxjs/toolkit';
 import { AppEvent } from '../../types/event.type';
+import { Timestamp } from 'firebase/firestore';
+import {
+  GenericActions,
+  GenericState,
+  createGenericSlice,
+} from '../../store/genericSlice';
 
 type State = {
-  events: AppEvent[];
+  data: AppEvent[];
 };
 
 const initialState: State = {
-  events: sampleData,
+  data: [],
 };
 
-export const eventsSlice = createSlice({
+export const eventsSlice = createGenericSlice({
   name: 'events',
-  initialState,
+  initialState: initialState as GenericState<AppEvent[]>,
   reducers: {
-    createEvent(state, action) {
-      state.events.push(action.payload);
-    },
-    updateEvent(state, action) {
-      state.events[
-        state.events.findIndex((ev) => ev.id === action.payload.id)
-      ] = action.payload;
-    },
-    deleteEvent(state, action) {
-      state.events.splice(
-        state.events.findIndex((ev) => ev.id === action.payload),
-        1
-      );
+    success: {
+      reducer(state, action: PayloadAction<AppEvent[]>) {
+        state.data = action.payload;
+        state.status = 'finished';
+      },
+      prepare(events) {
+        let eventsArray: AppEvent[] = [];
+
+        if (Array.isArray(events)) {
+          eventsArray = events;
+        } else {
+          eventsArray.push(events);
+        }
+        const mapped = eventsArray.map((ev: any) => {
+          return {
+            ...ev,
+            date: (ev.date as Timestamp).toDate().toISOString(),
+          };
+        });
+        return { payload: mapped };
+      },
     },
   },
 });
 
-export const { createEvent, updateEvent, deleteEvent } = eventsSlice.actions;
+export const actions = eventsSlice.actions as GenericActions<AppEvent[]>;
