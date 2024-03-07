@@ -1,13 +1,15 @@
 import ModalWrapper from '../../common/modals/ModalWrapper';
-import { Divider, Form, FormButton, Label } from 'semantic-ui-react';
+import { Form, FormButton, Label } from 'semantic-ui-react';
 import { FieldValues, useForm } from 'react-hook-form';
-import { signInWithEmailAndPassword } from 'firebase/auth';
+import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { auth } from '../../config/firebase';
 import { useAppDispatch } from '../../store/store';
 import { closeModal } from '../../common/modals/modalSlices';
-import SocialLogin from './SocialLogin';
+import { useFirestore } from '../../hooks/firestore/useFirestore';
+import { Timestamp } from 'firebase/firestore';
 
-function LoginForm() {
+function RegisterForm() {
+  const { set } = useFirestore('profiles');
   const {
     register,
     handleSubmit,
@@ -18,7 +20,19 @@ function LoginForm() {
 
   async function onSubmit(data: FieldValues) {
     try {
-      await signInWithEmailAndPassword(auth, data.email, data.password);
+      const userCreds = await createUserWithEmailAndPassword(
+        auth,
+        data.email,
+        data.password
+      );
+      await updateProfile(userCreds.user, {
+        displayName: data.displayName,
+      });
+      await set(userCreds.user.uid, {
+        displayName: data.displayName,
+        email: data.email,
+        createdAt: Timestamp.now(),
+      });
       dispatch(closeModal());
     } catch (error: any) {
       setError('root.serverError', { type: '400', message: error.message });
@@ -27,6 +41,12 @@ function LoginForm() {
   return (
     <ModalWrapper header={'Sign into re-vents'}>
       <Form onSubmit={handleSubmit(onSubmit)}>
+        <Form.Input
+          defaultValue=''
+          placeholder='Display name'
+          {...register('displayName', { required: true })}
+          error={errors.displayName && 'Display Name is required'}
+        />
         <Form.Input
           defaultValue=''
           placeholder='Email address'
@@ -56,18 +76,16 @@ function LoginForm() {
         )}
         <FormButton
           type='submit'
-          content='Login'
+          content='Register'
           loading={isSubmitting}
           disabled={!isValid || !isDirty || isSubmitting}
           fluid
           size='large'
           color='teal'
         />
-        <Divider horizontal>Or</Divider>
-        <SocialLogin />
       </Form>
     </ModalWrapper>
   );
 }
 
-export default LoginForm;
+export default RegisterForm;
