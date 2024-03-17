@@ -28,6 +28,12 @@ function SignedInMenu() {
             text='My profile'
             icon='user'
             as={Link}
+            to={`/profiles/${currentUser?.uid}`}
+          />
+          <Dropdown.Item
+            text='My account'
+            icon='settings'
+            as={Link}
             to='/account'
           />
           <Dropdown.Item text='Sign out' icon='power' onClick={handleSignOut} />
