@@ -1,5 +1,6 @@
-import { Segment, Item } from 'semantic-ui-react';
-import { AppEvent } from '../../../types/event.type';
+import { Segment, Item, Label } from 'semantic-ui-react';
+import { AppEvent } from '../../../types/event';
+import { Link } from 'react-router-dom';
 
 type Props = {
   event: AppEvent;
@@ -24,10 +25,19 @@ function EventDetailedSidebar({ event }: Props) {
         <Item.Group relaxed divided>
           {event.attendees.map((at) => (
             <Item key={at.id} style={{ position: 'relative' }}>
+              {event.hostUid === at.id && (
+                <Label
+                  style={{ position: 'absolute' }}
+                  color='orange'
+                  ribbon='right'
+                >
+                  Host
+                </Label>
+              )}
               <Item.Image size='tiny' src={at.photoURL ?? '/user.png'} />
               <Item.Content verticalAlign='middle'>
-                <Item.Header as='h3'>
-                  <span>{at.name}</span>
+                <Item.Header as={Link} to={`/profiles/${at.id}`}>
+                  <span>{at.displayName}</span>
                 </Item.Header>
               </Item.Content>
             </Item>

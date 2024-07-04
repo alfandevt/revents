@@ -5,8 +5,8 @@ import { Controller, FieldValues, useForm } from 'react-hook-form';
 import { categoryOptions } from './categoryOptions';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
-import { AppEvent } from '../../../types/event.type';
-import { Timestamp } from 'firebase/firestore';
+import { AppEvent } from '../../../types/event';
+import { Timestamp, arrayUnion } from 'firebase/firestore';
 import { toast } from 'react-toastify';
 import { useFirestore } from '../../../hooks/firestore/useFirestore';
 import { useEffect } from 'react';
@@ -19,6 +19,7 @@ function EventForm() {
     state.events.data?.find((ev) => ev.id === id)
   );
   const { status } = useAppSelector((state) => state.events);
+  const { currentUser } = useAppSelector((state) => state.auth);
   const navigate = useNavigate();
   const {
     register,
@@ -48,11 +49,18 @@ function EventForm() {
   }
 
   async function createEvent(data: FieldValues) {
+    if (!currentUser) return;
     const newEventRef = await create({
       ...data,
-      hostedBy: 'Bob',
-      attendees: [],
-      hostPhotoURL: '',
+      hostUid: currentUser.uid,
+      hostedBy: currentUser.displayName,
+      hostPhotoURL: currentUser.photoURL,
+      attendees: arrayUnion({
+        id: currentUser.uid,
+        displayName: currentUser.displayName,
+        photoURL: currentUser.photoURL,
+      }),
+      attendeeIds: arrayUnion(currentUser.uid),
       date: Timestamp.fromDate(data.date as unknown as Date),
     });
     return newEventRef;

@@ -1,5 +1,6 @@
 import { Image, List } from 'semantic-ui-react';
-import { Attendee } from '../../../types/event.type';
+import { Attendee } from '../../../types/event';
+import { Link } from 'react-router-dom';
 
 type Props = {
   attendee: Attendee;
@@ -7,8 +8,8 @@ type Props = {
 
 function EventListAttendee({ attendee }: Props) {
   return (
-    <List.Item>
-      <Image size='mini' circular src={attendee.photoURL} />
+    <List.Item as={Link} to={`/profiles/${attendee.id}`}>
+      <Image size='mini' circular src={attendee.photoURL ?? '/user.png'} />
     </List.Item>
   );
 }

@@ -9,7 +9,7 @@ import {
   SegmentGroup,
 } from 'semantic-ui-react';
 import EventListAttendee from './EventListAttendee';
-import { AppEvent } from '../../../types/event.type';
+import { AppEvent } from '../../../types/event';
 import { Link } from 'react-router-dom';
 
 type Props = {

@@ -1,5 +1,5 @@
 import { Segment, Grid, Icon, Button } from 'semantic-ui-react';
-import { AppEvent } from '../../../types/event.type';
+import { AppEvent } from '../../../types/event';
 
 type Props = {
   event: AppEvent;

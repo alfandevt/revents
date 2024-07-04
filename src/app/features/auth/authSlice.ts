@@ -1,5 +1,5 @@
 import { PayloadAction, createSlice } from '@reduxjs/toolkit';
-import { AppUser } from '../../types/user.type';
+import { AppUser } from '../../types/user';
 import { User } from 'firebase/auth';
 
 type State = {

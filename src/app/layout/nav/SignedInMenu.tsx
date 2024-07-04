@@ -20,7 +20,7 @@ function SignedInMenu() {
         <Dropdown.Menu>
           <Dropdown.Item
             as={Link}
-            to='/createEvents'
+            to='/createEvent'
             text='Create event'
             icon='plus'
           />

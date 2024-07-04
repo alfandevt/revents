@@ -1,5 +1,5 @@
 import EventListItem from './EventListItem';
-import { AppEvent } from '../../../types/event.type';
+import { AppEvent } from '../../../types/event';
 
 type Props = {
   events: AppEvent[];
